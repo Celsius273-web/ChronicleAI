@@ -45,16 +45,17 @@ def parselinks(links):
         for article in f.entries:
             if article.link:
                 details = fetchText(article.link)
+                organizedjson.append({
+                    "title": article.title if 'title' in article else 'No title available',
+                    "date": article.get('published', 'No date provided'),
+                    "publisher": item[0],
+                    "summary": article.get('summary', 'No summary available'),
+                    "url": article.link if 'link' in article else 'No URL available',
+                    "text": details
+                })
             else:
                 details = 'Cant Access Text'
-            organizedjson.append({
-                "title": article.title if 'title' in article else 'No title available',
-                "date": article.get('published', 'No date provided'),
-                "publisher": item[0],
-                "summary": article.get('summary', 'No summary available'),
-                "url": article.link if 'link' in article else 'No URL available',
-                "text": details
-            })
+
 
     print(f"Total articles collected: {len(organizedjson)}")  # Log the number of articles collected
     #print(organizedjson)
