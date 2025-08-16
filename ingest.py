@@ -9,13 +9,12 @@ def openyaml(fpath):
         raise FileNotFoundError(f"The file {fpath} does not exist.")
     with open(fpath, "r") as file:
         data = yaml.safe_load(file)
-        print(data)
         newsList = []
         for item in data:
             newsList.append([item['name'], item['url']])
     return newsList
 
-def fetchText(url):
+def fetchtext(url):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -41,25 +40,24 @@ def parselinks(links):
         f = feedparser.parse(source)
         if not f.entries:
             print(f"No articles found in feed: {source}")  # Log if no articles are found
+            continue  # Skip to the next feed if no entries
 
         for article in f.entries:
             if article.link:
-                details = fetchText(article.link)
-                organizedjson.append({
-                    "title": article.title if 'title' in article else 'No title available',
-                    "date": article.get('published', 'No date provided'),
-                    "publisher": item[0],
-                    "summary": article.get('summary', 'No summary available'),
-                    "url": article.link if 'link' in article else 'No URL available',
-                    "text": details
-                })
-            else:
-                details = 'Cant Access Text'
+                details = fetchtext(article.link)
+                if details and "Error fetching content." not in details and "No content found." not in details:
+                    organizedjson.append({
+                        "title": article.title if 'title' in article else 'No title available',
+                        "date": article.get('published', 'No date provided'),
+                        "publisher": item[0],
+                        "summary": article.get('summary', 'No summary available'),
+                        "url": article.link if 'link' in article else 'No URL available',
+                        "text": details
+                    })
+                else:
+                    print(f"Skipping article due to lack of content: {article.title if 'title' in article else 'No title available'}")
 
-
-    print(f"Total articles collected: {len(organizedjson)}")  # Log the number of articles collected
-    #print(organizedjson)
-
+    print(f"Total articles collected: {len(organizedjson)}")
     try:
         output_file_path = 'data/articles.json'
         with open(output_file_path, 'w') as fd:
