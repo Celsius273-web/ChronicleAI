@@ -19,16 +19,22 @@ def chunkandvect():
         )
 
         c_id = 0
-        metadata = []
+        metadata = {}
         chunklist = []
         for article in articles_json:
             raw_text = article["text"]
             chunks = splitter.split_text(raw_text)
 
             for chunk in chunks:
-                meta = {"ID" : c_id, "text": chunk, "publisher": article["publisher"], "date": article["date"], "url": article["url"], "title": article["title"] }
-                c_id = c_id + 1
-                metadata.append(meta)
+                meta = {
+                    "text": chunk,  # Replace with actual text for the article
+                    "publisher": article["publisher"],
+                    "date": article["date"],
+                    "url": article["url"],
+                    "title": article["title"]
+                }
+                metadata[c_id] = meta
+                c_id += 1
                 chunklist.append(chunk)
 
             embeddings = model.encode(chunklist)
@@ -45,7 +51,7 @@ def chunkandvect():
         print("Num of chunks", len(metadata))
         output_file_path = 'data/metadata.json'
         with open(output_file_path, 'w') as fd:
-            json.dump({"chunked": metadata}, fd, indent=2)
+            json.dump(metadata, fd, indent=2)
         print(f"Data written to JSON file successfully at {output_file_path}.")
 
     except Exception as e:
