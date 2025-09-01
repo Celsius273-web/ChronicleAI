@@ -28,10 +28,7 @@ def chunkandvect():
             for chunk in chunks:
                 meta = {
                     "text": chunk,  # Replace with actual text for the article
-                    "publisher": article["publisher"],
-                    "date": article["date"],
-                    "url": article["url"],
-                    "title": article["title"]
+                    "info": article["publisher"] + " " + article["date"] + " " + article["title"]
                 }
                 metadata[c_id] = meta
                 c_id += 1

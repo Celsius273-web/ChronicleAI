@@ -50,7 +50,7 @@ def parselinks(links):
                         "title": article.title if 'title' in article else 'No title available',
                         "date": article.get('published', 'No date provided'),
                         "publisher": item[0],
-                        "summary": article.get('summary', 'No summary available'),
+                        #"summary": article.get('summary', 'No summary available'),
                         "url": article.link if 'link' in article else 'No URL available',
                         "text": details
                     })
