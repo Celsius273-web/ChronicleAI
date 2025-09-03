@@ -19,8 +19,8 @@ def fetchtext(url):
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         try:
-            page.goto(url, timeout=50000)  # Set a timeout for page loading
-            content = page.query_selector('article')  # Example selector for the main article
+            page.goto(url, timeout=50000)
+            content = page.query_selector('article')
             if content:
                 text = content.inner_text()  # Get the text content
             else:
@@ -33,27 +33,29 @@ def fetchtext(url):
         return text.strip()
 
 def parselinks(links):
-    organizedjson = []
+    try:
+        with open('data/articles.json') as f:
+            organizedjson = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        organizedjson = {}
     for item in links:
         source = item[1]
-        print(f"Parsing feed: {source}")  # Log the feed being parsed
+        print(f"Parsing feed: {source}")
         f = feedparser.parse(source)
         if not f.entries:
-            print(f"No articles found in feed: {source}")  # Log if no articles are found
-            continue  # Skip to the next feed if no entries
-
+            print(f"No articles found in feed: {source}")  # Say if no articles are found
+            continue  # Skip to the next feed
         for article in f.entries:
-            if article.link:
+            if article.link and article.link not in organizedjson:
                 details = fetchtext(article.link)
                 if details and "Error fetching content." not in details and "No content found." not in details:
-                    organizedjson.append({
+                    organizedjson[article.link] = {
                         "title": article.title if 'title' in article else 'No title available',
                         "date": article.get('published', 'No date provided'),
                         "publisher": item[0],
-                        #"summary": article.get('summary', 'No summary available'),
-                        "url": article.link if 'link' in article else 'No URL available',
+                        "url": article.link,
                         "text": details
-                    })
+                    }
                 else:
                     print(f"Skipping article due to lack of content: {article.title if 'title' in article else 'No title available'}")
 

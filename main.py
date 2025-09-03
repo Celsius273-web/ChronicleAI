@@ -23,7 +23,7 @@ def askuser():
 def newsBot():
     load_dotenv()
     with warnings.catch_warnings():
-    apikey = os.getenv("MY_KEY")
+        api_k = os.environ.get("MY_KEY")
     with open('data/metadata.json') as f:
         metadata = json.load(f) #metadata is dict
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -54,7 +54,7 @@ def newsBot():
        " Do not hallucinate; rely only on the given content and your own verified knowledge." +
     "Ensure the responses have depth and you can include dates." )
 
-    client = genai.Client(api_key=apikey)
+    client = genai.Client(api_key=api_k)
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -80,12 +80,15 @@ def newsBot():
 
 
 def run():
-    while True:
-        newsBot()
-        answer = input("Do you want to ask another prompt? (y/n): ")
-        if answer.lower() != 'y':
-            break
 
+    while True:
+        answer = input("Options: p for new prompt, n for new sources, other chars to quit: ").lower()
+        if answer == 'p':
+            newsBot()
+        elif answer == 'n':
+            loadandorganize()
+        else:
+            break
 
 if __name__ == '__main__':
     run()

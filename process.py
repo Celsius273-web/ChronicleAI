@@ -3,6 +3,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
+import os
 
 
 
@@ -11,17 +12,31 @@ def chunkandvect():
         with open('data/articles.json') as f:
             articles_json = json.load(f)
         model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-        index = None
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=600,  # ~800 characters max per chunk
             chunk_overlap=100,  # overlap so context carries over
             separators=["\n\n", "\n", " ",]
         )
 
-        c_id = 0
-        metadata = {}
+        metadata_path = "data/metadata.json"
+        if os.path.exists(metadata_path):
+            with open(metadata_path) as f:
+                try:
+                    metadata = json.load(f)
+                except:
+                    metadata = {}
+        else:
+            metadata = {}
+        c_id = len(metadata)
+        index_path = "data/vector.index"
+        if os.path.exists(index_path):
+            index = faiss.read_index(index_path)
+        else:
+            index = None
         chunklist = []
-        for article in articles_json:
+        for url, article in articles_json:
+            if url in articles_json[url]:
+                continue
             raw_text = article["text"]
             chunks = splitter.split_text(raw_text)
 
@@ -42,7 +57,6 @@ def chunkandvect():
             chunklist.clear()
 
 
-        print("Number of vectors:", index.ntotal)
         faiss.write_index(index, 'data/vector.index')
         print("Number of vectors:", index.ntotal)
         print("Num of chunks", len(metadata))
